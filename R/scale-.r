@@ -549,7 +549,16 @@ ScaleContinuous <- ggproto("ScaleContinuous", Scale,
   },
 
   transform = function(self, x) {
-    new_x <- self$trans$transform(x)
+    new_x <- tryCatch({
+        self$trans$transform(x)
+    }, error = function(err) {
+        err$message <- paste(
+          err$message,
+          "\n\t",
+          "Do you want to use scale_x_date() instead of scale_x_datetime()?"
+        )
+        stop(err)
+    })
     axis <- if ("x" %in% self$aesthetics) "x" else "y"
     check_transformation(x, new_x, self$scale_name, axis)
     new_x
